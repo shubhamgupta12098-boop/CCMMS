@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Account · CCMMS</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <div class="auth-wrap">
+    <div class="auth-side">
+      <span class="mono" style="color:var(--accent);letter-spacing:0.08em;text-transform:uppercase;font-size:0.78rem;">New Account</span>
+      <h1>Join the queue that actually gets things fixed.</h1>
+      <p>Students raise tickets, staff resolve them, admins keep the whole board moving.</p>
+    </div>
+    <div class="auth-form-side"><div class="auth-box"><div class="card">
+      <h2>Create your account</h2>
+      <p class="text-soft mb-24" style="font-size:0.88rem;">A few details and you're in</p>
+      <form id="register-form">
+        <div class="form-group"><label for="name">Full name</label><input type="text" id="name" required placeholder="Asha Rao" /></div>
+        <div class="form-group"><label for="email">Email</label><input type="email" id="email" required placeholder="you@campus.edu" /></div>
+        <div class="form-group"><label for="password">Password</label><input type="password" id="password" required minlength="6" placeholder="At least 6 characters" /></div>
+        <div class="form-group"><label for="role">I am a</label><select id="role"><option value="student">Student</option><option value="staff">Maintenance Staff</option><option value="admin">Admin</option></select></div>
+        <div class="form-group"><label for="department">Department (optional)</label><input type="text" id="department" placeholder="Computer Science" /></div>
+        <div class="form-group"><label for="rollNumber">Roll / Staff ID (optional)</label><input type="text" id="rollNumber" placeholder="CS21B045" /></div>
+        <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+      </form>
+      <p class="text-soft mt-16" style="font-size:0.85rem;text-align:center;">Already have an account? <a href="login.html">Sign in</a></p>
+    </div></div></div>
+  </div>
+  <script>
+    if (window.Capacitor?.isNativePlatform?.()) {
+      window.CCMMS_API_BASE = "http://10.0.2.2:5000/api";
+    }
+  </script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
+</body>
+</html>

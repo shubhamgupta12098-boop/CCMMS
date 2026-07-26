@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Raise Complaint · CCMMS</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body data-title="Raise a Complaint" data-subtitle="File a new maintenance work order">
+  <div class="app-shell">
+    <div id="sidebar-mount"></div>
+    <div class="main">
+      <div id="topbar-mount"></div>
+      <div class="content" style="max-width:640px;">
+        <div class="card">
+          <h3>New Work Order</h3>
+          <p class="text-soft mb-24" style="font-size:0.88rem;">Fill in the details below — the more specific, the faster it gets fixed.</p>
+
+          <form id="complaint-form">
+            <div class="form-group">
+              <label for="title">Title</label>
+              <input type="text" id="title" required placeholder="e.g. Ceiling fan not working" />
+            </div>
+            <div class="form-group">
+              <label for="description">Description</label>
+              <textarea id="description" required placeholder="Describe the issue in detail…"></textarea>
+            </div>
+            <div class="flex gap-16">
+              <div class="form-group" style="flex:1;">
+                <label for="category">Category</label>
+                <select id="category" required>
+                  <option value="Electrical">Electrical</option>
+                  <option value="Plumbing">Plumbing</option>
+                  <option value="Furniture">Furniture</option>
+                  <option value="IT">IT / Network</option>
+                  <option value="Cleanliness">Cleanliness</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div class="form-group" style="flex:1;">
+                <label for="priority">Priority</label>
+                <select id="priority">
+                  <option value="Low">Low</option>
+                  <option value="Medium" selected>Medium</option>
+                  <option value="High">High</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="location">Location</label>
+              <input type="text" id="location" required placeholder="e.g. Hostel Block C, Room 214" />
+            </div>
+            <div class="form-group">
+              <label for="attachment">Attachment (optional)</label>
+              <input type="file" id="attachment" accept=".jpg,.jpeg,.png,.pdf" />
+              <div class="help-text">JPG, PNG or PDF, up to 5MB.</div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Submit Complaint</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/include.js"></script>
+  <script src="../assets/js/raise-complaint.js"></script>
+</body>
+</html>

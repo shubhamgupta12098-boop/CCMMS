@@ -1,0 +1,457 @@
+/* ==========================================================================
+   CCMMS Design System
+   Concept: campus facilities run on physical work-order tickets pinned to a
+   board. The UI borrows that vocabulary — perforated ticket cards, stamped
+   status codes, hairline rules — instead of generic dashboard-card chrome.
+   ========================================================================== */
+
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap");
+
+:root {
+  /* Color tokens */
+  --bg: #EEF1F6;
+  --surface: #FFFFFF;
+  --ink: #1B2430;
+  --ink-soft: #5C6B7A;
+  --navy: #12213B;
+  --navy-soft: #1C2F4D;
+  --accent: #FF6A3D;
+  --accent-soft: #FFE3D6;
+  --steel: #2F6690;
+  --line: #D8DEE8;
+
+  --status-open: #2F6690;
+  --status-open-bg: #E4EDF4;
+  --status-progress: #B9790A;
+  --status-progress-bg: #FBEDD1;
+  --status-resolved: #2E8B57;
+  --status-resolved-bg: #E1F1E7;
+  --status-rejected: #B23A3A;
+  --status-rejected-bg: #F8E3E3;
+
+  /* Type */
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+
+  /* Layout */
+  --radius: 10px;
+  --sidebar-w: 240px;
+  --shadow-card: 0 1px 2px rgba(18, 33, 59, 0.06), 0 6px 16px rgba(18, 33, 59, 0.05);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  color: var(--navy);
+  margin: 0 0 0.4em;
+  letter-spacing: -0.01em;
+}
+
+a { color: var(--steel); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.mono { font-family: var(--font-mono); letter-spacing: 0.02em; }
+
+/* Focus visibility (accessibility) */
+a:focus-visible, button:focus-visible, input:focus-visible,
+select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+/* ---------------------------------------------------------------------- */
+/* App shell: sidebar + main                                              */
+/* ---------------------------------------------------------------------- */
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  background: var(--navy);
+  color: #DCE4F0;
+  padding: 24px 18px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.sidebar .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  margin-bottom: 28px;
+}
+
+.brand .stamp {
+  width: 34px;
+  height: 34px;
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  transform: rotate(-4deg);
+}
+
+.sidebar nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #B7C2D6;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+.sidebar nav a:hover { background: var(--navy-soft); text-decoration: none; color: #fff; }
+.sidebar nav a.active { background: var(--accent); color: #fff; }
+
+.sidebar .nav-section-label {
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  color: #6E7F99;
+  margin: 18px 0 6px 12px;
+}
+
+.sidebar .sidebar-footer {
+  position: absolute;
+  bottom: 20px;
+  left: 18px;
+  right: 18px;
+  font-size: 0.78rem;
+  color: #6E7F99;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Topbar */
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.topbar h1 { font-size: 1.25rem; margin: 0; }
+.topbar .subtitle { color: var(--ink-soft); font-size: 0.85rem; margin-top: 2px; }
+
+.topbar .user-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+}
+.user-chip .avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--accent-soft); color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-weight: 700;
+}
+
+.content { padding: 28px 32px; max-width: 1100px; }
+
+/* ---------------------------------------------------------------------- */
+/* Buttons                                                                 */
+/* ---------------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.88rem;
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.15s ease;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #E85A2E; text-decoration: none; }
+.btn-outline { background: transparent; border-color: var(--line); color: var(--navy); }
+.btn-outline:hover { border-color: var(--steel); text-decoration: none; }
+.btn-ghost { background: transparent; color: var(--ink-soft); }
+.btn-danger { background: var(--status-rejected); color: #fff; }
+.btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+.btn-block { width: 100%; justify-content: center; }
+
+/* ---------------------------------------------------------------------- */
+/* Cards & the signature "work-order ticket"                              */
+/* ---------------------------------------------------------------------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 22px;
+}
+
+/* Ticket: a complaint rendered like a torn work-order stub.
+   The dashed rule + punched circles evoke a perforated tear-off slip. */
+.ticket {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  position: relative;
+  padding: 18px 20px;
+  margin-bottom: 16px;
+  display: grid;
+  grid-template-columns: 100px 1fr auto;
+  gap: 18px;
+  align-items: center;
+}
+
+.ticket::before,
+.ticket::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.ticket::before { left: -8px; }
+.ticket::after { right: -8px; }
+
+.ticket .ticket-id {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  border-right: 1px dashed var(--line);
+  padding-right: 14px;
+  text-align: center;
+}
+.ticket .ticket-id .num { display: block; font-size: 1rem; color: var(--navy); font-weight: 600; }
+
+.ticket .ticket-body h3 { font-size: 1rem; margin-bottom: 4px; }
+.ticket .ticket-meta {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  margin-top: 6px;
+}
+.ticket .ticket-meta span { display: flex; align-items: center; gap: 4px; }
+
+.ticket .ticket-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+/* Status stamp */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  border-radius: 100px;
+  border: 1px solid currentColor;
+}
+.status::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.status-open { color: var(--status-open); background: var(--status-open-bg); }
+.status-progress { color: var(--status-progress); background: var(--status-progress-bg); }
+.status-resolved { color: var(--status-resolved); background: var(--status-resolved-bg); }
+.status-rejected { color: var(--status-rejected); background: var(--status-rejected-bg); }
+
+.priority-High { color: var(--status-rejected); font-weight: 600; }
+.priority-Medium { color: var(--status-progress); font-weight: 600; }
+.priority-Low { color: var(--status-open); font-weight: 600; }
+
+/* ---------------------------------------------------------------------- */
+/* Stat grid (admin/staff dashboards)                                     */
+/* ---------------------------------------------------------------------- */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+  border-top: 3px solid var(--accent);
+}
+.stat-card .value { font-family: var(--font-display); font-size: 1.9rem; color: var(--navy); font-weight: 700; }
+.stat-card .label { font-size: 0.8rem; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* ---------------------------------------------------------------------- */
+/* Forms                                                                  */
+/* ---------------------------------------------------------------------- */
+.form-group { margin-bottom: 18px; }
+label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 6px;
+}
+input, select, textarea {
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+}
+input:focus, select:focus, textarea:focus { border-color: var(--steel); }
+textarea { resize: vertical; min-height: 100px; }
+.help-text { font-size: 0.76rem; color: var(--ink-soft); margin-top: 4px; }
+
+/* ---------------------------------------------------------------------- */
+/* Auth pages (login / register)                                         */
+/* ---------------------------------------------------------------------- */
+.auth-wrap {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+}
+.auth-side {
+  background: var(--navy);
+  color: #DCE4F0;
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.auth-side::after {
+  content: "";
+  position: absolute;
+  right: -60px;
+  bottom: -60px;
+  width: 260px;
+  height: 260px;
+  border: 40px solid rgba(255, 106, 61, 0.12);
+  border-radius: 50%;
+}
+.auth-side h1 { color: #fff; font-size: 2rem; max-width: 380px; }
+.auth-side p { color: #B7C2D6; max-width: 360px; }
+.auth-form-side {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+}
+.auth-box { width: 100%; max-width: 380px; }
+.auth-box .card { padding: 32px; }
+
+@media (max-width: 860px) {
+  .auth-wrap { grid-template-columns: 1fr; }
+  .auth-side { display: none; }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Landing page (index.html)                                              */
+/* ---------------------------------------------------------------------- */
+.landing-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+}
+.landing-hero {
+  text-align: center;
+  padding: 60px 20px 80px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.landing-hero h1 { font-size: 2.6rem; line-height: 1.15; }
+.landing-hero p { color: var(--ink-soft); font-size: 1.05rem; margin-bottom: 28px; }
+.landing-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  max-width: 1000px;
+  margin: 0 auto 60px;
+  padding: 0 20px;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Utility                                                                */
+/* ---------------------------------------------------------------------- */
+.flex { display: flex; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+.gap-8 { gap: 8px; } .gap-12 { gap: 12px; } .gap-16 { gap: 16px; }
+.mt-8 { margin-top: 8px; } .mt-16 { margin-top: 16px; } .mt-24 { margin-top: 24px; }
+.mb-8 { margin-bottom: 8px; } .mb-16 { margin-bottom: 16px; } .mb-24 { margin-bottom: 24px; }
+.text-soft { color: var(--ink-soft); }
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--ink-soft);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+}
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--navy);
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  box-shadow: var(--shadow-card);
+  z-index: 999;
+}
+.toast.error { background: var(--status-rejected); }
+.toast.success { background: var(--status-resolved); }
+
+@media (max-width: 720px) {
+  .app-shell { flex-direction: column; }
+  .sidebar { width: 100%; height: auto; position: relative; }
+  .ticket { grid-template-columns: 1fr; }
+  .ticket .ticket-id { border-right: none; border-bottom: 1px dashed var(--line); padding-right: 0; padding-bottom: 10px; }
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">CCMMS</string>
+    <string name="title_activity_main">CCMMS</string>
+    <string name="package_name">com.nikhil.ccmms</string>
+    <string name="custom_url_scheme">com.nikhil.ccmms</string>
+</resources>

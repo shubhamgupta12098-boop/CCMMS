@@ -1,0 +1,37 @@
+<!-- client/components/sidebar.html
+     Injected into every dashboard-style page by assets/js/include.js.
+     Shows/hides links based on data-role, and highlights the active link
+     using data-page matched against the current filename. -->
+<aside class="sidebar">
+  <div class="brand">
+    <span class="stamp">CC</span>
+    CCMMS
+  </div>
+
+  <div class="nav-section-label" data-role="student">Student</div>
+  <nav data-role="student">
+    <a href="student-dashboard.html" data-page="student-dashboard.html">🏠 Dashboard</a>
+    <a href="raise-complaint.html" data-page="raise-complaint.html">📝 Raise Complaint</a>
+    <a href="my-complaints.html" data-page="my-complaints.html">🎫 My Complaints</a>
+  </nav>
+
+  <div class="nav-section-label" data-role="staff">Staff</div>
+  <nav data-role="staff">
+    <a href="staff-dashboard.html" data-page="staff-dashboard.html">🏠 Dashboard</a>
+  </nav>
+
+  <div class="nav-section-label" data-role="admin">Admin</div>
+  <nav data-role="admin">
+    <a href="admin-dashboard.html" data-page="admin-dashboard.html">🏠 Dashboard</a>
+  </nav>
+
+  <div class="nav-section-label">Account</div>
+  <nav>
+    <a href="profile.html" data-page="profile.html">👤 Profile</a>
+    <a href="#" id="logout-link">🚪 Logout</a>
+  </nav>
+
+  <div class="sidebar-footer">
+    Campus Complaint &amp; Maintenance<br />Management System
+  </div>
+</aside>

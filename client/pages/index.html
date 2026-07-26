@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CCMMS · Campus Complaint &amp; Maintenance Management System</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <nav class="landing-nav">
+    <div class="flex gap-8" style="align-items:center;">
+      <span class="brand" style="display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;color:var(--navy);">
+        <span class="stamp" style="width:34px;height:34px;border:2px solid var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--accent);font-family:var(--font-mono);transform:rotate(-4deg);">CC</span>
+        CCMMS
+      </span>
+    </div>
+    <div class="flex gap-12">
+      <a href="login.html" class="btn btn-ghost">Sign In</a>
+      <a href="register.html" class="btn btn-primary">Get Started</a>
+    </div>
+  </nav>
+
+  <section class="landing-hero">
+    <span class="mono text-soft" style="letter-spacing:0.08em;text-transform:uppercase;font-size:0.78rem;">Work Order #0001 · Campus Facilities</span>
+    <h1>Report it. Track it. Get it fixed.</h1>
+    <p>CCMMS turns every broken switch, leaking tap, and jammed door into a trackable work-order ticket — from the moment a student reports it to the moment staff mark it resolved.</p>
+    <div class="flex gap-12" style="justify-content:center;">
+      <a href="register.html" class="btn btn-primary">Raise a Complaint</a>
+      <a href="login.html" class="btn btn-outline">I already have an account</a>
+    </div>
+  </section>
+
+  <section class="landing-features">
+    <div class="card"><h3 style="font-size:1rem;">🎫 Ticketed Complaints</h3><p class="text-soft" style="font-size:0.88rem;">Every issue gets a unique work-order ID, priority, and status — Open, In Progress, Resolved, or Rejected.</p></div>
+    <div class="card"><h3 style="font-size:1rem;">🔧 Staff Assignment</h3><p class="text-soft" style="font-size:0.88rem;">Admins route tickets to the right maintenance staff, who log remarks as work progresses.</p></div>
+    <div class="card"><h3 style="font-size:1rem;">📊 Live Oversight</h3><p class="text-soft" style="font-size:0.88rem;">Admins see campus-wide stats by category, priority, and status at a glance.</p></div>
+  </section>
+
+  <div id="footer-mount"></div>
+  <script>
+    if (window.Capacitor?.isNativePlatform?.()) {
+      window.CCMMS_API_BASE = "http://10.0.2.2:5000/api";
+    }
+  </script>
+  <script src="assets/js/api.js"></script>
+  <script>
+    fetch("components/footer.html").then(r => r.text()).then(html => {
+      document.getElementById("footer-mount").innerHTML = html;
+    });
+  </script>
+</body>
+</html>

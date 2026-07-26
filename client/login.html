@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In · CCMMS</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <div class="auth-wrap">
+    <div class="auth-side">
+      <span class="mono" style="color:var(--accent);letter-spacing:0.08em;text-transform:uppercase;font-size:0.78rem;">Work Order System</span>
+      <h1>Every complaint deserves a ticket number.</h1>
+      <p>Sign in to raise a new maintenance request, track an existing one, or manage the queue.</p>
+    </div>
+    <div class="auth-form-side"><div class="auth-box"><div class="card">
+      <h2>Welcome back</h2>
+      <p class="text-soft mb-24" style="font-size:0.88rem;">Sign in to your CCMMS account</p>
+      <form id="login-form">
+        <div class="form-group"><label for="email">Email</label><input type="email" id="email" required placeholder="you@campus.edu" /></div>
+        <div class="form-group"><label for="password">Password</label><input type="password" id="password" required placeholder="••••••••" /></div>
+        <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+      </form>
+      <p class="text-soft mt-16" style="font-size:0.85rem;text-align:center;">Don't have an account? <a href="register.html">Create one</a></p>
+    </div></div></div>
+  </div>
+  <script>
+    if (window.Capacitor?.isNativePlatform?.()) {
+      window.CCMMS_API_BASE = "http://10.0.2.2:5000/api";
+    }
+  </script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
+</body>
+</html>

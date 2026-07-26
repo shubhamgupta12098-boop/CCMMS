@@ -1,0 +1,26 @@
+CCMMS FIXED SETUP
+=================
+
+1) Put your Firebase private key file here (do not upload it publicly):
+   server/config/firebase-service-account.json
+
+2) Open VS Code terminal in this CCMMS folder and run:
+   cd server
+   npm install
+   node server.js
+
+3) Open the website through the backend (recommended):
+   http://localhost:5000/register.html
+
+   You may also use VS Code Live Server. API calls will automatically go to:
+   http://localhost:5000/api
+
+4) Test backend:
+   http://localhost:5000/api/health
+
+5) Register a user. Then verify Firebase Console > Firestore > Data > users.
+
+Important:
+- Keep the terminal running while using the site.
+- Never put firebase-service-account.json inside an Android app.
+- Do not upload server/.env or the service-account JSON to GitHub.
