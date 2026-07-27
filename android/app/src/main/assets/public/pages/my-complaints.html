@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Complaints · CCMMS</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body data-title="My Complaints" data-subtitle="Every ticket you've ever filed">
+  <div class="app-shell">
+    <div id="sidebar-mount"></div>
+    <div class="main">
+      <div id="topbar-mount"></div>
+      <div class="content">
+        <div class="flex-between mb-16">
+          <h3 style="margin:0;">All Tickets</h3>
+          <select id="status-filter" style="width:auto;">
+            <option value="all">All statuses</option>
+            <option value="Open">Open</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Resolved">Resolved</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+        </div>
+        <div id="complaints-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/include.js"></script>
+  <script src="../assets/js/my-complaints.js"></script>
+</body>
+</html>

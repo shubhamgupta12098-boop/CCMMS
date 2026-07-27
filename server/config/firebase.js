@@ -1,6 +1,6 @@
 // server/config/firebase.js
 // Firebase Admin setup for local development and Render.
-// Never commit firebase-service-account.json or real secrets to GitHub.
+// Never commit a service-account JSON file or real secrets to GitHub.
 
 const fs = require("fs");
 const path = require("path");
@@ -11,7 +11,10 @@ const { getStorage } = require("firebase-admin/storage");
 
 require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
 
-const serviceAccountPath = path.join(__dirname, "firebase-service-account.json");
+const localServiceAccountPath = path.join(
+  __dirname,
+  "firebase-service-account.json"
+);
 
 function clean(value) {
   if (typeof value !== "string") return value;
@@ -29,17 +32,6 @@ function normalisePrivateKey(rawValue) {
   let value = clean(rawValue);
   if (!value) return "";
 
-  // Also accepts a Base64-encoded private key through
-  // FIREBASE_PRIVATE_KEY_BASE64, which is often easiest on hosting sites.
-  if (!value.includes("BEGIN PRIVATE KEY")) {
-    try {
-      const decoded = Buffer.from(value, "base64").toString("utf8").trim();
-      if (decoded.includes("BEGIN PRIVATE KEY")) value = decoded;
-    } catch (_) {
-      // Keep the original value; validation below gives a useful error.
-    }
-  }
-
   value = value
     .replace(/\\r\\n/g, "\n")
     .replace(/\\n/g, "\n")
@@ -51,30 +43,73 @@ function normalisePrivateKey(rawValue) {
     !value.endsWith("-----END PRIVATE KEY-----")
   ) {
     throw new Error(
-      "FIREBASE_PRIVATE_KEY is invalid. Paste the complete private_key from the Firebase service-account JSON, including BEGIN/END lines, or set FIREBASE_PRIVATE_KEY_BASE64."
+      "Invalid Firebase private key. Recommended: set FIREBASE_SERVICE_ACCOUNT_BASE64 to the Base64 of the complete downloaded Firebase JSON file."
     );
   }
 
   return `${value}\n`;
 }
 
+function credentialFromServiceAccountBase64(encodedValue) {
+  const encoded = clean(encodedValue);
+  if (!encoded) return null;
+
+  try {
+    const jsonText = Buffer.from(encoded, "base64").toString("utf8");
+    const serviceAccount = JSON.parse(jsonText);
+
+    if (
+      !serviceAccount.project_id ||
+      !serviceAccount.client_email ||
+      !serviceAccount.private_key
+    ) {
+      throw new Error("Required service-account fields are missing");
+    }
+
+    return cert({
+      projectId: serviceAccount.project_id,
+      clientEmail: serviceAccount.client_email,
+      privateKey: normalisePrivateKey(serviceAccount.private_key),
+    });
+  } catch (error) {
+    throw new Error(
+      `FIREBASE_SERVICE_ACCOUNT_BASE64 is invalid: ${error.message}`
+    );
+  }
+}
+
 function getCredential() {
-  // Local-only fallback. This file is ignored by Git and removed from the
-  // distributable ZIP. Render should use environment variables instead.
-  if (fs.existsSync(serviceAccountPath)) {
-    // eslint-disable-next-line global-require, import/no-dynamic-require
-    return cert(require(serviceAccountPath));
+  // Recommended on Render: Base64 of the complete Firebase service-account JSON.
+  if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
+    return credentialFromServiceAccountBase64(
+      process.env.FIREBASE_SERVICE_ACCOUNT_BASE64
+    );
   }
 
+  // Local-only fallback. This file is ignored by Git.
+  if (fs.existsSync(localServiceAccountPath)) {
+    // eslint-disable-next-line global-require, import/no-dynamic-require
+    return cert(require(localServiceAccountPath));
+  }
+
+  // Alternative setup using separate Render variables.
   const projectId = clean(process.env.FIREBASE_PROJECT_ID);
   const clientEmail = clean(process.env.FIREBASE_CLIENT_EMAIL);
-  const privateKeySource =
-    process.env.FIREBASE_PRIVATE_KEY_BASE64 || process.env.FIREBASE_PRIVATE_KEY;
-  const privateKey = normalisePrivateKey(privateKeySource);
+  let privateKeyValue = process.env.FIREBASE_PRIVATE_KEY;
+
+  // Backward compatibility: this variable contains Base64 of the PEM key only.
+  if (!privateKeyValue && process.env.FIREBASE_PRIVATE_KEY_BASE64) {
+    privateKeyValue = Buffer.from(
+      clean(process.env.FIREBASE_PRIVATE_KEY_BASE64),
+      "base64"
+    ).toString("utf8");
+  }
+
+  const privateKey = normalisePrivateKey(privateKeyValue);
 
   if (!projectId || !clientEmail || !privateKey) {
     throw new Error(
-      "Firebase credentials missing. Set FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL and FIREBASE_PRIVATE_KEY (or FIREBASE_PRIVATE_KEY_BASE64) in Render Environment."
+      "Firebase credentials missing. Recommended: set FIREBASE_SERVICE_ACCOUNT_BASE64 in Render."
     );
   }
 

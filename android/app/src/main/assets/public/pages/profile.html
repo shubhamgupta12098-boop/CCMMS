@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Profile · CCMMS</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body data-title="My Profile" data-subtitle="Your account details">
+  <div class="app-shell">
+    <div id="sidebar-mount"></div>
+    <div class="main">
+      <div id="topbar-mount"></div>
+      <div class="content" style="max-width:520px;">
+        <div class="card">
+          <h3>Account Details</h3>
+          <form id="profile-form" class="mt-16">
+            <div class="form-group">
+              <label for="p-name">Full name</label>
+              <input type="text" id="p-name" />
+            </div>
+            <div class="form-group">
+              <label for="p-email">Email</label>
+              <input type="email" id="p-email" disabled />
+              <div class="help-text">Email cannot be changed.</div>
+            </div>
+            <div class="form-group">
+              <label for="p-role">Role</label>
+              <input type="text" id="p-role" disabled style="text-transform:capitalize;" />
+            </div>
+            <div class="form-group">
+              <label for="p-department">Department</label>
+              <input type="text" id="p-department" />
+            </div>
+            <div class="form-group">
+              <label for="p-rollnumber">Roll / Staff ID</label>
+              <input type="text" id="p-rollnumber" />
+            </div>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/include.js"></script>
+  <script src="../assets/js/profile.js"></script>
+</body>
+</html>

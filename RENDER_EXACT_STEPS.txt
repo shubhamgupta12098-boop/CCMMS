@@ -1,0 +1,62 @@
+CCMMS - EXACT RENDER FIREBASE SETUP
+===================================
+
+SECURITY FIRST
+--------------
+A Firebase private key was previously exposed. In Firebase Console:
+Project Settings > Service Accounts > Manage service account permissions
+Delete/disable the exposed key and generate a NEW private key JSON.
+Never paste the new key into chat or GitHub.
+
+1) PUSH THIS FIX TO GITHUB
+--------------------------
+Open terminal inside the CCMMS folder:
+
+git add .
+git commit -m "Use Firebase service account Base64 on Render"
+git push
+
+2) CREATE THE BASE64 VALUE
+---------------------------
+Keep the NEW downloaded JSON in Downloads. In PowerShell run this command,
+replacing the filename with the exact downloaded filename:
+
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("$HOME\Downloads\YOUR-FIREBASE-FILE.json")) | Set-Clipboard
+
+No output is expected. The complete Base64 value is copied to clipboard.
+
+To find the exact filename first:
+
+Get-ChildItem "$HOME\Downloads" -Filter "*firebase-adminsdk*.json"
+
+3) RENDER ENVIRONMENT
+---------------------
+Render > CCMMS > Environment
+
+Add:
+KEY:   FIREBASE_SERVICE_ACCOUNT_BASE64
+VALUE: press Ctrl+V
+
+Delete these old variables to avoid confusion:
+- FIREBASE_PRIVATE_KEY
+- FIREBASE_PRIVATE_KEY_BASE64
+
+You may keep:
+- FIREBASE_DATABASE_URL (only if your code uses Realtime Database)
+- FIREBASE_STORAGE_BUCKET
+- JWT_SECRET
+- JWT_EXPIRES_IN
+- NODE_ENV=production
+- CLIENT_URL=*
+
+Do not add PORT. Render supplies PORT automatically.
+
+4) DEPLOY
+---------
+Save Changes, then:
+Manual Deploy > Clear build cache & deploy
+
+Render settings:
+Root Directory: server
+Build Command: npm install
+Start Command: npm start

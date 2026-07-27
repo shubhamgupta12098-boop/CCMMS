@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staff Dashboard · CCMMS</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body data-title="Staff Dashboard" data-subtitle="Your assigned work orders">
+  <div class="app-shell">
+    <div id="sidebar-mount"></div>
+    <div class="main">
+      <div id="topbar-mount"></div>
+      <div class="content">
+        <h2 style="margin-bottom:2px;">On the floor, <span id="welcome-name">there</span> 🔧</h2>
+        <p class="text-soft mb-24">Tickets currently assigned to you.</p>
+
+        <div class="stat-grid">
+          <div class="stat-card"><div class="value" id="stat-total">0</div><div class="label">Assigned</div></div>
+          <div class="stat-card"><div class="value" id="stat-progress">0</div><div class="label">In Progress</div></div>
+          <div class="stat-card"><div class="value" id="stat-resolved">0</div><div class="label">Resolved</div></div>
+        </div>
+
+        <h3>Your Work Orders</h3>
+        <div id="assigned-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/include.js"></script>
+  <script src="../assets/js/staff-dashboard.js"></script>
+</body>
+</html>
