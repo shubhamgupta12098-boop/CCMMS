@@ -1,0 +1,45 @@
+CCMMS — Render Firebase credential fix
+======================================
+
+Render settings
+---------------
+Root Directory: server
+Build Command: npm install
+Start Command: npm start
+Health Check Path: /api/health
+
+Required Render Environment variables
+-------------------------------------
+NODE_ENV=production
+JWT_SECRET=<a long random secret>
+JWT_EXPIRES_IN=7d
+FIREBASE_PROJECT_ID=<service-account JSON project_id>
+FIREBASE_CLIENT_EMAIL=<service-account JSON client_email>
+FIREBASE_DATABASE_URL=<your Firebase URL, only if used>
+FIREBASE_STORAGE_BUCKET=<your bucket, only if used>
+CLIENT_URL=*
+
+Private-key method A
+--------------------
+Set FIREBASE_PRIVATE_KEY to the complete value from the service-account JSON.
+It may contain literal \\n characters. Include both:
+-----BEGIN PRIVATE KEY-----
+-----END PRIVATE KEY-----
+
+Private-key method B (recommended)
+----------------------------------
+Open PowerShell in the folder containing the downloaded service-account JSON
+and run the following after replacing the filename:
+
+$json = Get-Content '.\\service-account.json' -Raw | ConvertFrom-Json
+[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($json.private_key))
+
+Copy the resulting one-line value into Render as:
+FIREBASE_PRIVATE_KEY_BASE64=<copied value>
+
+When using BASE64, delete FIREBASE_PRIVATE_KEY from Render to avoid confusion.
+Do not upload the service-account JSON or .env to GitHub.
+
+After saving variables
+----------------------
+Manual Deploy > Deploy latest commit

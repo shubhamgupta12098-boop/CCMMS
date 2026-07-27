@@ -1,8 +1,11 @@
 node_modules/
-server/node_modules/
+**/node_modules/
 .env
-server/.env
-server/config/firebase-service-account.json
+**/.env
+!.env.example
+!**/.env.example
+**/firebase-service-account.json
+**/*service-account*.json
 server/uploads/*
 !server/uploads/.gitkeep
 *.log
@@ -10,3 +13,4 @@ server/uploads/*
 dist/
 android/.gradle/
 android/local.properties
+.idea/
