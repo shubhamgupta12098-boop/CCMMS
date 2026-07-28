@@ -1,29 +1,23 @@
-// client/assets/js/api.js
-// API Helper + Session + Toast
-
 const API_BASE = (() => {
 
-  // Android App (Capacitor)
   if (window.Capacitor?.isNativePlatform?.()) {
     return "https://ccmms.onrender.com/api";
   }
 
-  // Website hosted on Render
   if (window.location.hostname.includes("onrender.com")) {
     return "/api";
   }
 
-  // Local Node Server
   if (window.location.port === "5000") {
     return "/api";
   }
 
-  // VS Code Live Server
   return "http://localhost:5000/api";
 
 })();
 
 const Session = {
+
   setSession(token, user) {
     localStorage.setItem("ccmms_token", token);
     localStorage.setItem("ccmms_user", JSON.stringify(user));
@@ -51,21 +45,42 @@ const Session = {
   },
 
   logout() {
+
     this.clear();
-    window.location.href = "login.html";
+
+    if (window.location.pathname.includes("/pages/")) {
+      window.location.href = "../login.html";
+    } else {
+      window.location.href = "login.html";
+    }
+
   },
 
   requireAuth(roles = []) {
+
     const token = this.getToken();
     const user = this.getUser();
 
     if (!token || !user) {
-      window.location.href = "login.html";
-      return;
+
+      if (window.location.pathname.includes("/pages/")) {
+        window.location.href = "../login.html";
+      } else {
+        window.location.href = "login.html";
+      }
+
+      return null;
     }
 
     if (roles.length && !roles.includes(user.role)) {
-      window.location.href = `${user.role}-dashboard.html`;
+
+      if (window.location.pathname.includes("/pages/")) {
+        window.location.href = `${user.role}-dashboard.html`;
+      } else {
+        window.location.href = `pages/${user.role}-dashboard.html`;
+      }
+
+      return null;
     }
 
     return user;
@@ -100,7 +115,7 @@ async function apiRequest(path, options = {}) {
 
   try {
     data = await response.json();
-  } catch (e) {
+  } catch {
     throw new Error("Unexpected server response.");
   }
 
@@ -126,9 +141,7 @@ function showToast(message, type = "success") {
   document.body.appendChild(toast);
 
   setTimeout(() => {
-
     toast.remove();
-
   }, 3000);
 
 }
