@@ -1,14 +1,35 @@
 // client/assets/js/include.js
-// Injects the shared sidebar + topbar into any page with
-// <div id="sidebar-mount"></div> and <div id="topbar-mount"></div>,
-// then applies role-based visibility, active-link highlighting,
-// user info, and the logout handler.
+// Loads sidebar/navbar and handles navigation + logout.
 
 async function loadComponent(url, mountId) {
   const mount = document.getElementById(mountId);
+
   if (!mount) return;
-  const res = await fetch(url);
-  mount.innerHTML = await res.text();
+
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Component load failed: ${url}`);
+    }
+
+    mount.innerHTML = await response.text();
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+function getLoginPageUrl() {
+  // All dashboards are inside client/pages/
+  return new URL("../login.html", window.location.href).href;
+}
+
+function performLogout() {
+  localStorage.removeItem("ccmms_token");
+  localStorage.removeItem("ccmms_user");
+
+  // replace() prevents returning to dashboard with Android back button
+  window.location.replace(getLoginPageUrl());
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -17,36 +38,98 @@ document.addEventListener("DOMContentLoaded", async () => {
     loadComponent("../components/navbar.html", "topbar-mount"),
   ]);
 
-  const user = Session.getUser();
-  const currentPage = window.location.pathname.split("/").pop();
+  const user =
+    typeof Session !== "undefined"
+      ? Session.getUser()
+      : null;
 
-  // Role-based nav visibility
-  document.querySelectorAll("[data-role]").forEach((el) => {
-    if (!user || el.dataset.role !== user.role) el.style.display = "none";
+  const currentPage =
+    window.location.pathname.split("/").pop();
+
+  // Show navigation according to role
+  document.querySelectorAll("[data-role]").forEach((element) => {
+    if (!user || element.dataset.role !== user.role) {
+      element.style.display = "none";
+    }
   });
 
-  // Active link highlight
-  document.querySelectorAll("[data-page]").forEach((el) => {
-    if (el.dataset.page === currentPage) el.classList.add("active");
+  // Highlight current page
+  document.querySelectorAll("[data-page]").forEach((element) => {
+    if (element.dataset.page === currentPage) {
+      element.classList.add("active");
+    }
   });
 
-  // Topbar content from <body data-title data-subtitle>
-  const title = document.body.dataset.title;
-  const subtitle = document.body.dataset.subtitle;
-  if (title) document.getElementById("topbar-title").textContent = title;
-  if (subtitle) document.getElementById("topbar-subtitle").textContent = subtitle;
+  // Set topbar title/subtitle
+  const titleElement =
+    document.getElementById("topbar-title");
 
-  if (user) {
-    document.getElementById("user-initial").textContent = user.name.charAt(0).toUpperCase();
-    document.getElementById("user-name").textContent = user.name;
-    document.getElementById("user-role").textContent = user.role;
+  const subtitleElement =
+    document.getElementById("topbar-subtitle");
+
+  if (titleElement && document.body.dataset.title) {
+    titleElement.textContent =
+      document.body.dataset.title;
   }
 
-  const logoutLink = document.getElementById("logout-link");
+  if (subtitleElement && document.body.dataset.subtitle) {
+    subtitleElement.textContent =
+      document.body.dataset.subtitle;
+  }
+
+  // Display logged-in user
+  if (user) {
+    const initialElement =
+      document.getElementById("user-initial");
+
+    const nameElement =
+      document.getElementById("user-name");
+
+    const roleElement =
+      document.getElementById("user-role");
+
+    const userName =
+      user.name || user.email || "User";
+
+    if (initialElement) {
+      initialElement.textContent =
+        userName.charAt(0).toUpperCase();
+    }
+
+    if (nameElement) {
+      nameElement.textContent = userName;
+    }
+
+    if (roleElement) {
+      roleElement.textContent =
+        user.role || "";
+    }
+  }
+
+  const logoutLink =
+    document.getElementById("logout-link");
+
   if (logoutLink) {
-    logoutLink.addEventListener("click", (e) => {
-      e.preventDefault();
-      Session.logout();
+    logoutLink.setAttribute(
+      "href",
+      getLoginPageUrl()
+    );
+
+    logoutLink.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      performLogout();
     });
+
+    // Android touch support
+    logoutLink.addEventListener(
+      "touchend",
+      (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        performLogout();
+      },
+      { passive: false }
+    );
   }
 });
