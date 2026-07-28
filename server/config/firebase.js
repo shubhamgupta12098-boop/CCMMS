@@ -1,6 +1,6 @@
 // server/config/firebase.js
 // Firebase Admin setup for local development and Render.
-// Never commit a service-account JSON file or real secrets to GitHub.
+// Recommended on Render: FIREBASE_SERVICE_ACCOUNT_JSON (complete Firebase JSON).
 
 const fs = require("fs");
 const path = require("path");
@@ -19,12 +19,14 @@ const localServiceAccountPath = path.join(
 function clean(value) {
   if (typeof value !== "string") return value;
   const trimmed = value.trim();
+
   if (
     (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
     (trimmed.startsWith("'") && trimmed.endsWith("'"))
   ) {
     return trimmed.slice(1, -1);
   }
+
   return trimmed;
 }
 
@@ -42,35 +44,49 @@ function normalisePrivateKey(rawValue) {
     !value.startsWith("-----BEGIN PRIVATE KEY-----") ||
     !value.endsWith("-----END PRIVATE KEY-----")
   ) {
-    throw new Error(
-      "Invalid Firebase private key. Recommended: set FIREBASE_SERVICE_ACCOUNT_BASE64 to the Base64 of the complete downloaded Firebase JSON file."
-    );
+    throw new Error("Firebase private key is not valid PEM data.");
   }
 
   return `${value}\n`;
 }
 
-function credentialFromServiceAccountBase64(encodedValue) {
-  const encoded = clean(encodedValue);
-  if (!encoded) return null;
+function credentialFromObject(serviceAccount) {
+  if (
+    !serviceAccount ||
+    !serviceAccount.project_id ||
+    !serviceAccount.client_email ||
+    !serviceAccount.private_key
+  ) {
+    throw new Error(
+      "Firebase service-account JSON is missing project_id, client_email, or private_key."
+    );
+  }
+
+  return cert({
+    projectId: serviceAccount.project_id,
+    clientEmail: serviceAccount.client_email,
+    privateKey: normalisePrivateKey(serviceAccount.private_key),
+  });
+}
+
+function credentialFromJson(rawJson) {
+  const value = clean(rawJson);
+  if (!value) return null;
 
   try {
-    const jsonText = Buffer.from(encoded, "base64").toString("utf8");
-    const serviceAccount = JSON.parse(jsonText);
+    return credentialFromObject(JSON.parse(value));
+  } catch (error) {
+    throw new Error(`FIREBASE_SERVICE_ACCOUNT_JSON is invalid: ${error.message}`);
+  }
+}
 
-    if (
-      !serviceAccount.project_id ||
-      !serviceAccount.client_email ||
-      !serviceAccount.private_key
-    ) {
-      throw new Error("Required service-account fields are missing");
-    }
+function credentialFromBase64(rawBase64) {
+  const value = clean(rawBase64);
+  if (!value) return null;
 
-    return cert({
-      projectId: serviceAccount.project_id,
-      clientEmail: serviceAccount.client_email,
-      privateKey: normalisePrivateKey(serviceAccount.private_key),
-    });
+  try {
+    const jsonText = Buffer.from(value, "base64").toString("utf8");
+    return credentialFromObject(JSON.parse(jsonText));
   } catch (error) {
     throw new Error(
       `FIREBASE_SERVICE_ACCOUNT_BASE64 is invalid: ${error.message}`
@@ -79,41 +95,27 @@ function credentialFromServiceAccountBase64(encodedValue) {
 }
 
 function getCredential() {
-  // Recommended on Render: Base64 of the complete Firebase service-account JSON.
+  // Simplest Render setup: paste the complete downloaded JSON as one value.
+  if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+    return credentialFromJson(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+  }
+
+  // Base64 alternative.
   if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
-    return credentialFromServiceAccountBase64(
+    return credentialFromBase64(
       process.env.FIREBASE_SERVICE_ACCOUNT_BASE64
     );
   }
 
-  // Local-only fallback. This file is ignored by Git.
+  // Local development only; this file is ignored by Git.
   if (fs.existsSync(localServiceAccountPath)) {
     // eslint-disable-next-line global-require, import/no-dynamic-require
-    return cert(require(localServiceAccountPath));
+    return credentialFromObject(require(localServiceAccountPath));
   }
 
-  // Alternative setup using separate Render variables.
-  const projectId = clean(process.env.FIREBASE_PROJECT_ID);
-  const clientEmail = clean(process.env.FIREBASE_CLIENT_EMAIL);
-  let privateKeyValue = process.env.FIREBASE_PRIVATE_KEY;
-
-  // Backward compatibility: this variable contains Base64 of the PEM key only.
-  if (!privateKeyValue && process.env.FIREBASE_PRIVATE_KEY_BASE64) {
-    privateKeyValue = Buffer.from(
-      clean(process.env.FIREBASE_PRIVATE_KEY_BASE64),
-      "base64"
-    ).toString("utf8");
-  }
-
-  const privateKey = normalisePrivateKey(privateKeyValue);
-
-  if (!projectId || !clientEmail || !privateKey) {
-    throw new Error(
-      "Firebase credentials missing. Recommended: set FIREBASE_SERVICE_ACCOUNT_BASE64 in Render."
-    );
-  }
-
-  return cert({ projectId, clientEmail, privateKey });
+  throw new Error(
+    "Firebase credentials missing. In Render, add FIREBASE_SERVICE_ACCOUNT_JSON and paste the complete fresh service-account JSON."
+  );
 }
 
 if (getApps().length === 0) {
