@@ -1,19 +1,26 @@
 // client/assets/js/api.js
-// Fetch helper, session storage, and shared UI utilities.
+// API Helper + Session + Toast
 
-// When pages are opened through the Node server, use the same origin.
-// When opened through VS Code Live Server (port 5500), send API calls to
-// the backend running on port 5000 instead of accidentally posting to 5500.
 const API_BASE = (() => {
-  const { protocol, hostname, port } = window.location;
 
-  if (port === "5000" || !port) return "/api";
+  // Android App (Capacitor)
+  if (window.Capacitor?.isNativePlatform?.()) {
+    return "https://ccmms.onrender.com/api";
+  }
 
-  // Android emulator can later override this value before loading api.js:
-  // window.CCMMS_API_BASE = "http://10.0.2.2:5000/api";
-  if (window.CCMMS_API_BASE) return window.CCMMS_API_BASE;
+  // Website hosted on Render
+  if (window.location.hostname.includes("onrender.com")) {
+    return "/api";
+  }
 
-  return `${protocol}//${hostname}:5000/api`;
+  // Local Node Server
+  if (window.location.port === "5000") {
+    return "/api";
+  }
+
+  // VS Code Live Server
+  return "http://localhost:5000/api";
+
 })();
 
 const Session = {
@@ -21,106 +28,132 @@ const Session = {
     localStorage.setItem("ccmms_token", token);
     localStorage.setItem("ccmms_user", JSON.stringify(user));
   },
+
   getToken() {
     return localStorage.getItem("ccmms_token");
   },
+
   getUser() {
-    const raw = localStorage.getItem("ccmms_user");
-    if (!raw) return null;
     try {
-      return JSON.parse(raw);
+      return JSON.parse(localStorage.getItem("ccmms_user"));
     } catch {
-      Session.clear();
       return null;
     }
   },
+
   clear() {
     localStorage.removeItem("ccmms_token");
     localStorage.removeItem("ccmms_user");
   },
+
   isLoggedIn() {
-    return Boolean(Session.getToken());
+    return !!this.getToken();
   },
-  requireAuth(allowedRoles = []) {
-    const user = Session.getUser();
-    if (!Session.isLoggedIn() || !user) {
-      window.location.href = "login.html";
-      return null;
-    }
-    if (allowedRoles.length && !allowedRoles.includes(user.role)) {
-      window.location.href = `${user.role}-dashboard.html`;
-      return null;
-    }
-    return user;
-  },
+
   logout() {
-    Session.clear();
+    this.clear();
     window.location.href = "login.html";
   },
+
+  requireAuth(roles = []) {
+    const token = this.getToken();
+    const user = this.getUser();
+
+    if (!token || !user) {
+      window.location.href = "login.html";
+      return;
+    }
+
+    if (roles.length && !roles.includes(user.role)) {
+      window.location.href = `${user.role}-dashboard.html`;
+    }
+
+    return user;
+  }
 };
 
-async function apiRequest(path, { method = "GET", body = null, isFormData = false } = {}) {
+async function apiRequest(path, options = {}) {
+
   const headers = {};
+
+  if (!options.isFormData) {
+    headers["Content-Type"] = "application/json";
+  }
+
   const token = Session.getToken();
 
-  if (token) headers.Authorization = `Bearer ${token}`;
-  if (!isFormData) headers["Content-Type"] = "application/json";
-
-  let res;
-  try {
-    res = await fetch(`${API_BASE}${path}`, {
-      method,
-      headers,
-      body: body ? (isFormData ? body : JSON.stringify(body)) : undefined,
-    });
-  } catch {
-    throw new Error("Backend server nahi mil raha. Terminal me 'cd server' aur 'node server.js' chalao.");
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
   }
+
+  const response = await fetch(API_BASE + path, {
+    method: options.method || "GET",
+    headers,
+    body: options.body
+      ? options.isFormData
+        ? options.body
+        : JSON.stringify(options.body)
+      : undefined
+  });
 
   let data;
+
   try {
-    data = await res.json();
-  } catch {
-    data = { success: false, message: "Unexpected server response." };
+    data = await response.json();
+  } catch (e) {
+    throw new Error("Unexpected server response.");
   }
 
-  if (!res.ok) {
-    throw new Error(data.message || `Request failed (${res.status})`);
+  if (!response.ok || data.success === false) {
+    throw new Error(data.message || "Request failed.");
   }
 
   return data;
 }
 
 function showToast(message, type = "success") {
-  const existing = document.querySelector(".toast");
-  if (existing) existing.remove();
 
-  const el = document.createElement("div");
-  el.className = `toast ${type}`;
-  el.textContent = message;
-  document.body.appendChild(el);
-  setTimeout(() => el.remove(), 3500);
+  const old = document.querySelector(".toast");
+
+  if (old) old.remove();
+
+  const toast = document.createElement("div");
+
+  toast.className = `toast ${type}`;
+
+  toast.textContent = message;
+
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+
+    toast.remove();
+
+  }, 3000);
+
 }
 
 function statusClass(status) {
+
   return {
     Open: "status-open",
     "In Progress": "status-progress",
     Resolved: "status-resolved",
-    Rejected: "status-rejected",
+    Rejected: "status-rejected"
   }[status] || "status-open";
+
 }
 
-function formatDate(iso) {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  return d.toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+function formatDate(date) {
+
+  if (!date) return "-";
+
+  return new Date(date).toLocaleDateString("en-IN");
+
 }
 
 function ticketRef(id) {
-  return `#${id.slice(0, 6).toUpperCase()}`;
+
+  return "#" + id.substring(0, 6).toUpperCase();
+
 }
