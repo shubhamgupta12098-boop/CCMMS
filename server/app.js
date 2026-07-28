@@ -12,29 +12,67 @@ const adminRoutes = require("./routes/adminRoutes");
 const staffRoutes = require("./routes/staffRoutes");
 
 const app = express();
+
 const clientRoot = path.join(__dirname, "..", "client");
 const pagesRoot = path.join(clientRoot, "pages");
 
 app.use(
   cors({
-    // Allows both the Node-served UI (5000) and VS Code Live Server (5500)
-    // during local development. Restrict this list before public deployment.
     origin(origin, callback) {
-      if (!origin) return callback(null, true);
 
-      const allowed = new Set([
-        process.env.CLIENT_URL,
-        "http://localhost:5000",
-        "http://127.0.0.1:5000",
-        "http://localhost:5500",
-        "http://127.0.0.1:5500",
-      ].filter(Boolean));
+      // Allow Postman / server-to-server
+      if (!origin) {
+        return callback(null, true);
+      }
 
-      return callback(null, allowed.has(origin));
+      const allowedOrigins = new Set(
+        [
+          process.env.CLIENT_URL,
+
+          // Local backend
+          "http://localhost:5000",
+          "http://127.0.0.1:5000",
+
+          // VS Code Live Server
+          "http://localhost:5500",
+          "http://127.0.0.1:5500",
+
+          // Capacitor Android
+          "https://localhost",
+          "http://localhost",
+
+          // Render frontend
+          "https://ccmms.onrender.com",
+        ].filter(Boolean)
+      );
+
+      if (allowedOrigins.has(origin)) {
+        return callback(null, true);
+      }
+
+      console.log("Blocked CORS Origin:", origin);
+
+      return callback(new Error(`CORS blocked: ${origin}`));
     },
+
     credentials: true,
+
+    methods: [
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE",
+      "OPTIONS",
+    ],
+
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+    ],
   })
 );
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -47,36 +85,55 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/staff", staffRoutes);
 
 app.get("/api/health", (req, res) => {
-  res.status(200).json({ success: true, message: "CCMMS API is running." });
+  res.status(200).json({
+    success: true,
+    message: "CCMMS API is running.",
+  });
 });
 
-// Friendly page URLs when the UI is opened through http://localhost:5000
-app.get("/", (req, res) => res.sendFile(path.join(pagesRoot, "index.html")));
+// Friendly page URLs
+app.get("/", (req, res) => {
+  res.sendFile(path.join(pagesRoot, "index.html"));
+});
+
 app.get("/:page.html", (req, res, next) => {
   const safePage = path.basename(req.params.page);
-  const filePath = path.join(pagesRoot, `${safePage}.html`);
-  res.sendFile(filePath, (err) => {
-    if (err) next();
-  });
+
+  res.sendFile(
+    path.join(pagesRoot, `${safePage}.html`),
+    (err) => {
+      if (err) next();
+    }
+  );
 });
+
 app.get("/pages/:page.html", (req, res, next) => {
   const safePage = path.basename(req.params.page);
-  const filePath = path.join(pagesRoot, `${safePage}.html`);
-  res.sendFile(filePath, (err) => {
-    if (err) next();
-  });
+
+  res.sendFile(
+    path.join(pagesRoot, `${safePage}.html`),
+    (err) => {
+      if (err) next();
+    }
+  );
 });
 
 app.use("/api", (req, res) => {
-  res.status(404).json({ success: false, message: "API route not found." });
+  res.status(404).json({
+    success: false,
+    message: "API route not found.",
+  });
 });
 
 app.use((req, res) => {
-  res.status(404).sendFile(path.join(pagesRoot, "index.html"));
+  res.status(404).sendFile(
+    path.join(pagesRoot, "index.html")
+  );
 });
 
 app.use((err, req, res, next) => {
-  console.error("Unhandled error:", err.message);
+  console.error(err);
+
   res.status(err.status || 500).json({
     success: false,
     message: err.message || "Internal server error.",
